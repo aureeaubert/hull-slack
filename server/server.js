@@ -134,7 +134,7 @@ module.exports = function Server({
     );
 
     app.post(
-      "/smart-notify",
+      "/smart-notifier",
       smartNotifierHandler({
         hostSecret,
         handlers: {

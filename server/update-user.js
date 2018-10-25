@@ -110,17 +110,7 @@ export default async function(
 
     const sendMessages = [];
 
-    const fake_changes = {
-      segments: {
-        entered: [
-          {
-            id: "5b7e6d81b568798b9a0016d0"
-          }
-        ]
-      }
-    }
-
-    const segmentMessages = await getSegmentMessages(fake_changes.segments, notify_segments, hullUser);
+    const segmentMessages = await getSegmentMessages(changes.segments, notify_segments, hullUser);
     client.logger.debug("outgoing.user.segments", segmentMessages);
 
     console.log("segmentMessages", segmentMessages);

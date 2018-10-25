@@ -1,5 +1,6 @@
 //@noflow
 import Hull from "hull";
+import 'babel-polyfill';
 import Server from "./server";
 
 if (process.env.LOG_LEVEL) {

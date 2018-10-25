@@ -64,6 +64,7 @@ const getActions = (user, traits, events, actions, group = "") => ({
 module.exports = function userPayload({
   hull,
   user = {},
+  account = {},
   events = [],
   segments = {},
   changes = [],
@@ -77,40 +78,45 @@ module.exports = function userPayload({
   const atts = buildAttachments({
     hull,
     user,
+    account,
     segments,
     changes,
     events,
-    pretext: message,
     whitelist: w,
   });
   const name = getUserName(user);
 
   // common items;
-  const attachments = _.values(_.pick(atts, "segments", "changes"));
+  const attachments = [];
 
-  // "@hull events user@example.com"
-  if (group === "events" && events.length) {
-    attachments.push(...atts.events);
-  } else if (group && group !== "traits") {
-    // "@hull user@example.com intercom" -> return only Intercom group;
-    const t = _.filter(
-      atts.traits,
-      traitGroup => traitGroup.fallback.toLowerCase() === group.toLowerCase()
-    );
-    attachments.push(...t);
-  } else {
-    // "@hull user@example.com full|traits"
-    attachments.push(...atts.traits);
-    // No whitelist: Default payload for User attachement;
-    // if (!w.length)
+  attachments.push(atts.user);
+  attachments.push(atts.account);
+
+  if (!message) {
+    attachments.push(atts.segments);
+    attachments.push(atts.changes);
+
+    // "@hull events user@example.com"
+    if (group === "events" && events.length) {
+      attachments.push(...atts.events);
+    } else if (group && group !== "traits") {
+      // "@hull user@example.com intercom" -> return only Intercom group;
+      const t = _.filter(
+        atts.traits,
+        traitGroup => traitGroup.fallback.toLowerCase() === group.toLowerCase()
+      );
+      attachments.push(...t);
+    } else {
+      // "@hull user@example.com full|traits"
+      attachments.push(...atts.traits);
+      // No whitelist: Default payload for User attachement;
+      // if (!w.length)
+    }
   }
-  attachments.unshift(atts.user);
-
-  // Add Actions
-  attachments.push(getActions(user, atts.traits, atts.events, actions, group));
 
   return {
-    text: `*<${user_url}|${name}>*`,
+    text: message || `*<${user_url}|${name}>*`,
     attachments,
+    as_user: true,
   };
 };

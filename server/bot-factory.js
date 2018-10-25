@@ -4,8 +4,7 @@ import _ from "lodash";
 import interactiveMessage from "./bot/interactive-message";
 import { replies, join } from "./bot";
 import getTeamChannels from "./lib/get-team-channels";
-import getNotifyChannels from "./lib/get-notify-channels";
-import getUniqueChannelNames from "./lib/get-unique-channel-names";
+import getSanitizedChannel from "./lib/get-sanitized-channel";
 import type { Hull, ConnectSlackParams, Bot } from "./types";
 
 import setupChannels from "./lib/setup-channels";
@@ -136,10 +135,17 @@ module.exports = function BotFactory({ Hull, devMode }: BotFactoryParams) {
         throw new Error("Config is invalid");
       }
 
-      const token = ship.private_settings.bot.bot_access_token;
-      const app_token = ship.private_settings.token;
-
-      const channels = getUniqueChannelNames(getNotifyChannels(ship));
+      const privateSettings = ship.private_settings;
+      const token = privateSettings.bot.bot_access_token;
+      const appToken = privateSettings.token;
+      const channels = _.compact(
+        _.map(
+          _.concat(privateSettings.notify_segments, privateSettings.notify_events), change => {
+            return getSanitizedChannel(change.channel);
+          }
+        )
+      );
+      
       const oldBot = _getBotByToken(token);
       if (oldBot && oldBot.rtm) {
         if (force) {
@@ -151,11 +157,11 @@ module.exports = function BotFactory({ Hull, devMode }: BotFactoryParams) {
       }
 
       const config = {
-        ..._.pick(ship.private_settings, "user_id", "actions", "whitelist"),
-        id: ship.private_settings.team_id, // TEAM ID
-        bot_id: ship.private_settings.bot.bot_user_id,
+        ..._.pick(privateSettings, "user_id", "actions", "whitelist"),
+        id: privateSettings.team_id, // TEAM ID
+        bot_id: privateSettings.bot.bot_user_id,
         channels,
-        app_token,
+        app_token: appToken,
         token, // BOT TOKEN
         // send_via_rtm: true,
         hullConfig: _.pick(conf, "organization", "id", "secret"),

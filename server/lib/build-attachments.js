@@ -16,7 +16,7 @@ function formatObjToText(ob) {
 }
 
 function colorFactory() {
-  const COLORS = ["#83D586", "#49A2E1", "#FF625A", "#E57831", "#4BC2B8"];
+  const COLORS = ["#83D586", "#49A2E1", "#FF625A", "#E57831", "#4BC2B8", "#4BC2B8"];
   let i = -1;
   const l = COLORS.length;
   return function cycle() {
@@ -27,15 +27,15 @@ function colorFactory() {
 
 const FORMATTER = [
   {
-    key: "email",
-    value: email => `:love_letter: ${email}`,
+    title: "Email",
+    value: email => `${email}`,
     short: true,
   },
-  // {
-  //   key: "phone",
-  //   value: phone => `:telephone_receiver: ${phone}`,
-  //   short: true
-  // },
+  {
+    key: "Phone",
+    value: phone => `${phone}`,
+    short: true
+  }
   // {
   //   key: "address_country",
   //   value: (address = {}, user) => `${flags(user.address_country)} ${_.join(_.compact([user.address_country, user.address_state, user.address_city]), ", ")}`,
@@ -53,31 +53,34 @@ const FORMATTER = [
   // }
 ];
 
-function getUserAttachment(user, color, pretext) {
-  const name = getUserName(user);
-  const fields = _.reduce(
-    FORMATTER,
-    (ff, formatter) => {
-      const value = _.get(user, formatter.key);
-      if (value === null || value === undefined) return ff;
-      ff.push({ value: formatter.value(value, user), short: formatter.short });
-      return ff;
-    },
-    []
-  );
-  let footer = `:eyeglasses: ${moment(user.last_seen_at).format(
-    MOMENT_FORMAT
-  )}`;
-  if (user.sessions_count)
-    footer = `${footer} :desktop_computer: ${user.sessions_count}`;
+function getUserAttachment(user, color) {
+  const fields = [
+    `*Email:* ${user.email || "Unknown"}`,
+    `*Phone:* ${user.phone || "Unknown"}`,
+    `*Job title:* ${_.get(user.traits, 'job_title', 'Unknown')}`,
+  ];
+
   return {
     mrkdwn_in: ["text", "fields", "pretext"],
-    pretext,
-    fallback: name,
+    author_name: ":man: Personal Info",
     color: color(),
     fields,
-    footer,
     thumb_url: user.picture,
+    text: fields.join('\n')
+  };
+}
+
+function getAccountAttachment(account, color) {
+  const fields = [
+    `*Domain:* ${account.domain || account.email_domain || "Unknown"}`,
+    `*Country:* ${account.address_country || "Unknown"}`
+  ];
+
+  return {
+    mrkdwn_in: ["text", "fields", "pretext"],
+    author_name: ":office: Company Info",
+    color: color(),
+    text: fields.join('\n')
   };
 }
 
@@ -176,21 +179,20 @@ function getEventsAttachements(events = [], color) {
 module.exports = function buildAttachments({
   hull,
   user = {},
+  account = {},
   segments = [],
   changes = {},
   events = [],
-  pretext = "",
   whitelist = [],
 }) {
   const color = colorFactory();
-  const traitsSource = _.size(whitelist)
-    ? getWhitelistedUser({ user, whitelist, hull })
-    : user;
+
   return {
-    user: getUserAttachment(traitsSource, color, pretext),
+    user: getUserAttachment(user, color),
+    account: getAccountAttachment(account, color),
     segments: getSegmentAttachments(changes, segments, color),
     events: getEventsAttachements(events, color),
     changes: getChangesAttachment(changes, color),
-    traits: getTraitsAttachments(traitsSource, color),
+    traits: getTraitsAttachments(user, color),
   };
 };

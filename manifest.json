@@ -105,6 +105,11 @@
             "type": "string",
             "format": "string"
           },
+          "message": {
+            "title": "Message",
+            "type": "string",
+            "format": "textarea"
+          },
           "enter": {
             "title": "Notify on enter",
             "type": "boolean",

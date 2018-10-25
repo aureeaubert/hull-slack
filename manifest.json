@@ -142,6 +142,11 @@
             "title": "@user or #channel",
             "type": "string",
             "format": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string",
+            "format": "textarea"
           }
         }
       }

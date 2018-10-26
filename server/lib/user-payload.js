@@ -116,7 +116,6 @@ module.exports = function userPayload({
 
   return {
     text: message || `*<${user_url}|${name}>*`,
-    attachments,
-    as_user: true,
+    attachments
   };
 };

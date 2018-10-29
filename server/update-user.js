@@ -110,10 +110,8 @@ export default async function(
 
     const sendMessages = [];
 
-    const segmentMessages = await getSegmentMessages(changes.segments, notify_segments, hullUser);
+    const segmentMessages = await getSegmentMessages(_.get(changes, "segments", []), notify_segments, hullUser);
     client.logger.debug("outgoing.user.segments", segmentMessages);
-
-    console.log("segmentMessages", segmentMessages);
 
     const eventMessages = await getEventMessages(events, notify_events, hullUser);
     client.logger.debug("outgoing.user.events", eventMessages);
@@ -123,8 +121,6 @@ export default async function(
 
     const sendChannels = _.map(sendMessages, "channel");
     client.logger.debug("outgoing.user.channels", sendChannels);
-
-    console.log("sendMessages", sendMessages);
 
     if (!sendChannels.length) {
       return client.logger.info("outgoing.user.skip", {

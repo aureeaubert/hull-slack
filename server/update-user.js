@@ -20,7 +20,7 @@ async function getSegmentMessages(segments, notifySegments, hullUser) {
   const messages = [];
 
   await Promise.each(notifySegments, async notifySegment => {
-    const { segment, channel, enter, leave, message } = notifySegment;
+    const { segment, channel, attributes, message, enter, leave } = notifySegment;
 
     if (
       (enter && _.includes(enteredSegmentIds, segment))
@@ -28,7 +28,8 @@ async function getSegmentMessages(segments, notifySegments, hullUser) {
     ) {
       messages.push({
         channel: getSanitizedChannel(channel),
-        text: await interpolateText(message, hullUser)
+        text: await interpolateText(message, hullUser),
+        attributes
       })
     }
   });
@@ -41,12 +42,13 @@ async function getEventMessages(events, notifyEvents, hullUser) {
   const eventNames = _.map(events, "event");
 
   await Promise.each(notifyEvents, async notifyEvent => {
-    const { event, channel, message } = notifyEvent;
+    const { event, channel, attributes, message } = notifyEvent;
 
     if (_.includes(eventNames, event)) {
       messages.push({
         channel: getSanitizedChannel(channel),
-        text: await interpolateText(message, hullUser)
+        text: await interpolateText(message, hullUser),
+        attributes
       })
     }
   })
@@ -148,6 +150,7 @@ export default async function(
             hull,
             actions,
             message: message.text,
+            attributes: message.attributes,
             whitelist
           });
 

@@ -90,7 +90,6 @@
       "title": "Notify when Segments change",
       "type": "array",
       "format": "table",
-      "default": [{ "segment": "", "channel": "" }],
       "items": {
         "type": "object",
         "required": [ "channel", "segment"],
@@ -104,6 +103,12 @@
             "title": "@user or #channel",
             "type": "string",
             "format": "string"
+          },
+          "attributes": {
+            "title": "Attributes",
+            "type": "array",
+            "default": [],
+            "format": "trait"
           },
           "message": {
             "title": "Message",
@@ -142,6 +147,12 @@
             "title": "@user or #channel",
             "type": "string",
             "format": "string"
+          },
+          "attributes": {
+            "title": "Attributes",
+            "type": "array",
+            "default": [],
+            "format": "trait"
           },
           "message": {
             "title": "Message",

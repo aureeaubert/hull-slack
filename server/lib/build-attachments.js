@@ -53,12 +53,24 @@ const FORMATTER = [
   // }
 ];
 
-function getUserAttachment(user, color) {
-  const fields = [
-    `*Email:* ${user.email || "Unknown"}`,
-    `*Phone:* ${user.phone || "Unknown"}`,
-    `*Job title:* ${_.get(user.traits, 'job_title', 'Unknown')}`,
-  ];
+function getHumanizedAttributeName(attribute) {
+  return _.get(attribute.match(/^traits_(.*)/), "[1]", attribute);
+}
+
+function getAttributeValue(object, attribute) {
+  const value = _.get(object, attribute, "Unknown");
+
+  if (_.isArray(value)) {
+    return value.join(', ');
+  }
+
+  return value;
+}
+
+function getUserAttachment(user, userAttributes, color) {
+  const fields = _.map(userAttributes, attribute => {
+    return `*${getHumanizedAttributeName(attribute)}:* ${getAttributeValue(user, attribute)}`
+  });
 
   return {
     mrkdwn_in: ["text", "fields", "pretext"],
@@ -70,11 +82,10 @@ function getUserAttachment(user, color) {
   };
 }
 
-function getAccountAttachment(account, color) {
-  const fields = [
-    `*Domain:* ${account.domain || account.email_domain || "Unknown"}`,
-    `*Country:* ${account.address_country || "Unknown"}`
-  ];
+function getAccountAttachment(account, accountAttributes, color) {
+  const fields = _.map(accountAttributes, attribute => {
+    return `*${getHumanizedAttributeName(attribute)}:* ${getAttributeValue(account, attribute)}`;
+  });
 
   return {
     mrkdwn_in: ["text", "fields", "pretext"],
@@ -96,30 +107,6 @@ function getChangesAttachment(changes, color) {
           _.mapValues(changes.user, v => `${v[0]} → ${v[1]}`)
         ),
       };
-}
-
-function getTraitsAttachments(user, color) {
-  return _.reduce(
-    _.pickBy(user, _.isPlainObject),
-    (atts, value, key) => {
-      if (_.isObject(value)) {
-        atts.push({
-          mrkdwn_in: ["text", "fields", "pretext"],
-          author_name: `:globe_with_meridians: ${humanize(key)}`,
-          text: formatObjToText(value),
-          color: color(),
-          fallback: key,
-        });
-      }
-      return atts;
-    },
-    []
-  );
-}
-
-function getWhitelistedUser({ user = {}, whitelist = [], hull }) {
-  const whitelistedUser = _.pick(user, whitelist);
-  return hull.utils.traits.group(whitelistedUser);
 }
 
 function getSegmentAttachments(changes = {}, segments, color) {
@@ -181,18 +168,28 @@ module.exports = function buildAttachments({
   user = {},
   account = {},
   segments = [],
+  attributes = [],
   changes = {},
   events = [],
   whitelist = [],
 }) {
   const color = colorFactory();
+  const userAttributes = _.filter(attributes, attribute => {
+    return !attribute.match(/^account./);
+  });
+  const accountAttributes = _.map(
+    _.filter(attributes, attribute => {
+      return attribute.match(/^account./);
+    }), attribute => {
+      return attribute.match(/^account.(.*)/)[1]
+    }
+  );
 
   return {
-    user: getUserAttachment(user, color),
-    account: getAccountAttachment(account, color),
+    user: getUserAttachment(user, userAttributes, color),
+    account: getAccountAttachment(account, accountAttributes, color),
     segments: getSegmentAttachments(changes, segments, color),
     events: getEventsAttachements(events, color),
     changes: getChangesAttachment(changes, color),
-    traits: getTraitsAttachments(user, color),
   };
 };

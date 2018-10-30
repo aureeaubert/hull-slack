@@ -71,6 +71,7 @@ module.exports = function userPayload({
   actions = [],
   whitelist = [],
   message = "",
+  attributes = ["email", "job_title", "account.domain", "account.address_country"],
   group = "",
 }) {
   const user_url = urlFor(user, hull.configuration().organization);
@@ -80,6 +81,7 @@ module.exports = function userPayload({
     user,
     account,
     segments,
+    attributes,
     changes,
     events,
     whitelist: w,
@@ -95,23 +97,6 @@ module.exports = function userPayload({
   if (!message) {
     attachments.push(atts.segments);
     attachments.push(atts.changes);
-
-    // "@hull events user@example.com"
-    if (group === "events" && events.length) {
-      attachments.push(...atts.events);
-    } else if (group && group !== "traits") {
-      // "@hull user@example.com intercom" -> return only Intercom group;
-      const t = _.filter(
-        atts.traits,
-        traitGroup => traitGroup.fallback.toLowerCase() === group.toLowerCase()
-      );
-      attachments.push(...t);
-    } else {
-      // "@hull user@example.com full|traits"
-      attachments.push(...atts.traits);
-      // No whitelist: Default payload for User attachement;
-      // if (!w.length)
-    }
   }
 
   return {

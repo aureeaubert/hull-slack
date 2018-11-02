@@ -91,8 +91,13 @@ module.exports = function userPayload({
   // common items;
   const attachments = [];
 
-  attachments.push(atts.user);
-  attachments.push(atts.account);
+  if (!_.isNil(atts.user)) {
+    attachments.push(atts.user);
+  }
+
+  if (!_.isNil(atts.account)) {
+    attachments.push(atts.account);
+  }
 
   if (!message) {
     attachments.push(atts.segments);

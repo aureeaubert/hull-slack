@@ -68,6 +68,10 @@ function getAttributeValue(object, attribute) {
 }
 
 function getUserAttachment(user, userAttributes, color) {
+  if (_.isEmpty(userAttributes)) {
+    return; 
+  }
+
   const fields = _.map(userAttributes, attribute => {
     return `*${getHumanizedAttributeName(attribute)}:* ${getAttributeValue(user, attribute)}`
   });
@@ -83,6 +87,10 @@ function getUserAttachment(user, userAttributes, color) {
 }
 
 function getAccountAttachment(account, accountAttributes, color) {
+  if (_.isEmpty(accountAttributes)) {
+    return;
+  }
+
   const fields = _.map(accountAttributes, attribute => {
     return `*${getHumanizedAttributeName(attribute)}:* ${getAttributeValue(account, attribute)}`;
   });

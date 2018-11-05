@@ -80,8 +80,6 @@ function getUserAttachment(user, userAttributes, color) {
     mrkdwn_in: ["text", "fields", "pretext"],
     author_name: ":man: Personal Info",
     color: color(),
-    fields,
-    thumb_url: user.picture,
     text: fields.join('\n')
   };
 }

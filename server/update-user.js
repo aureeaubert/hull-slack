@@ -101,6 +101,8 @@ export default async function(
     const hullUser = _.cloneDeep(userMessage.user);
     hullUser.account = _.cloneDeep(userMessage.account);
 
+    console.log(`hullUser:${hullUser.email}`, hullUser);
+
     if (!hull || !hullUser.id || !token) {
       return hull.logger.info("outgoing.user.skip", {
         message: "Missing credentials",
